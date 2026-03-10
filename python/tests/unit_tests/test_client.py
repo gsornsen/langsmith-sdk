@@ -2179,6 +2179,34 @@ def test_validate_api_key_if_hosted_without_tracing(
                 raise e
 
 
+@mock.patch("langsmith.client.requests.Session")
+@mock.patch.dict(os.environ, {"LANGSMITH_OTEL_ENABLED": "true"})
+def test_client_init_otel_enabled_missing_deps_warns_not_crashes(
+    _mock_session: mock.Mock,
+) -> None:
+    """Client.__init__ should emit a warning (not raise UnboundLocalError) when
+    LANGSMITH_OTEL_ENABLED is set but the opentelemetry packages are absent.
+
+    Regression: two redundant `import warnings` statements inside Client.__init__
+    caused the CPython compiler to mark 'warnings' as a local variable for the
+    entire method body. The warnings.warn() call in the except ImportError block
+    executed before either inner binding was reached, so the local slot was
+    uninitialized → UnboundLocalError.
+    """
+    _clear_env_cache()
+    with mock.patch(
+        "langsmith.client._import_otel",
+        side_effect=ImportError("opentelemetry not installed"),
+    ):
+        with pytest.warns(UserWarning, match="OpenTelemetry packages are not installed"):
+            client = Client(
+                api_url="http://localhost:1984",
+                api_key="fake_api_key",
+                auto_batch_tracing=False,
+            )
+    assert client.otel_exporter is None
+
+
 def test_parse_token_or_url():
     # Test with URL
     url = "https://smith.langchain.com/public/419dcab2-1d66-4b94-8901-0357ead390df/d"
