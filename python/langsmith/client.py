@@ -1150,8 +1150,6 @@ class Client:
         # Initialize prompt cache
         # Handle backwards compatibility for deprecated `cache` parameter
         if cache is not None and disable_prompt_cache:
-            import warnings
-
             warnings.warn(
                 "Both 'cache' and 'disable_prompt_cache' were provided. "
                 "The 'cache' parameter is deprecated and will be removed in a future version. "
@@ -1161,8 +1159,6 @@ class Client:
             )
 
         if cache is not None:
-            import warnings
-
             warnings.warn(
                 "The 'cache' parameter is deprecated and will be removed in a future version. "
                 "Use 'configure_global_prompt_cache()' to configure the global cache, or "
