@@ -2198,7 +2198,9 @@ def test_client_init_otel_enabled_missing_deps_warns_not_crashes(
         "langsmith.client._import_otel",
         side_effect=ImportError("opentelemetry not installed"),
     ):
-        with pytest.warns(UserWarning, match="OpenTelemetry packages are not installed"):
+        with pytest.warns(
+            UserWarning, match="OpenTelemetry packages are not installed"
+        ):
             client = Client(
                 api_url="http://localhost:1984",
                 api_key="fake_api_key",
